@@ -1,0 +1,82 @@
+<h2>Search for StoreOrders</h2>
+<form id="StoreOrderSearch" class="form-horizontal">
+    <div class="control-group">
+    </div>
+    <div class="control-group">
+    </div>
+    <div class="control-group">
+        <label for="product" class="control-label">Product</label>
+        <div class="controls">
+            <input id="product" name="product" type="text" ng-model="search.product" placeholder="Enter the StoreOrder product"></input>
+        </div>
+    </div>
+    <div class="control-group">
+        <label for="amount" class="control-label">Amount</label>
+        <div class="controls">
+            <input id="amount" name="amount" type="text" ng-model="search.amount" placeholder="Enter the StoreOrder amount"></input>
+        </div>
+    </div>
+    <div class="control-group">
+        <label for="remarks" class="control-label">Remarks</label>
+        <div class="controls">
+            <input id="remarks" name="remarks" type="text" ng-model="search.remarks" placeholder="Enter the StoreOrder remarks"></input>
+        </div>
+    </div>
+    <div class="control-group">
+        <label for="customer" class="control-label">Customer</label>
+        <div class="controls">
+            <select id="customer" name="customer" ng-model="search.customer" ng-options="c as c.id for c in customerList">
+                <option value="">Choose a Customer</option>
+            </select>
+        </div>
+    </div>
+    <div class="control-group">
+        <label for="voucher" class="control-label">Voucher</label>
+        <div class="controls">
+            <select id="voucher" name="voucher" ng-model="search.voucher" ng-options="v as v.id for v in voucherList">
+                <option value="">Choose a Voucher</option>
+            </select>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <a id="Search" name="Search" class="btn btn-primary" ng-click="performSearch()"><i class="icon-search icon-white"></i> Search</a>
+            <a id="Create" name="Create" class="btn" href="#/StoreOrders/new"><i class="icon-plus-sign"></i> Create New</a>
+        </div>
+    </div>
+</form>
+<div id="search-results">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Amount</th>
+                <th>Remarks</th>
+                <th>Customer</th>
+                <th>Voucher</th>
+            </tr>
+        </thead>
+        <tbody id="search-results-body">
+            <tr ng-repeat="result in searchResults | filter:filterSearchResults | startFrom:currentPage*pageSize | limitTo:pageSize">
+                <td><a href="#/StoreOrders/edit/{{result.id}}">{{result.product}}</a></td>
+                <td><a href="#/StoreOrders/edit/{{result.id}}">{{result.amount}}</a></td>
+                <td><a href="#/StoreOrders/edit/{{result.id}}">{{result.remarks}}</a></td>
+                <td><a href="#/StoreOrders/edit/{{result.id}}">{{result.customer.id}}</a></td>
+                <td><a href="#/StoreOrders/edit/{{result.id}}">{{result.voucher.id}}</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="pagination pagination-centered">
+        <ul>
+            <li ng-class="{disabled:currentPage == 0}">
+                <a id="prev" href ng-click="previous()">«</a>
+            </li>
+            <li ng-repeat="n in pageRange" ng-class="{active:currentPage == n}" ng-click="setPage(n)">
+                <a href ng-bind="n + 1">1</a>
+            </li>
+            <li ng-class="{disabled: currentPage == (numberOfPages() - 1)}">
+                <a id="next" href ng-click="next()">»</a>
+            </li>
+        </ul>
+    </div>
+</div>

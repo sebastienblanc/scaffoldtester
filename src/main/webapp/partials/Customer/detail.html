@@ -1,0 +1,25 @@
+<form id="new-Customer" name="newCustomer" class="form-horizontal">
+    <div class="control-group">
+    </div>
+    <div class="control-group">
+    </div>
+    <div class="control-group">
+        <label for="firstName" class="control-label">FirstName</label>
+        <div class="controls">
+            <input id="firstName" name="firstName" type="text"  ng-model="customer.firstName" placeholder="Enter the Customer firstName"></input>
+        </div>
+    </div>
+    <div class="control-group">
+        <label for="dateOfBirth" class="control-label">DateOfBirth</label>
+        <div class="controls">
+            <input id="dateOfBirth" name="dateOfBirth" type="date"  ng-model="customer.dateOfBirth" placeholder="Enter the Customer dateOfBirth"></input>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <button id="saveCustomer" name="saveCustomer" class="btn btn-primary" ng-disabled="isClean() || newCustomer.$invalid" ng-click="save()"><i class="icon-ok-sign icon-white"></i> Save</button>
+            <button id="cancel" name="cancel" class="btn" ng-click="cancel()"><i class="icon-remove-sign"></i> Cancel</button>
+            <button id="deleteCustomer" name="deleteCustomer" class="btn" ng-show="customer.id" ng-click="remove()"><i class="icon-trash"></i> Delete</button>
+        </div>
+    <div>
+</form>
