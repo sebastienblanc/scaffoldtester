@@ -1,42 +1,33 @@
 'use strict';
 
-function SearchCustomerController($scope,$filter,$http,dataService,CustomerResource
-) {
+function SearchCustomerController($scope,$filter,dataService) {
     $scope.filter = $filter;
 	$scope.search={};
 	$scope.currentPage = 0;
 	$scope.pageSize= 10;
 	$scope.searchResults = [];
 	$scope.pageRange = [];
-	var customerPipe = dataService.customerPipe; 
 	$scope.numberOfPages = function() {
 		var result = Math.ceil($scope.searchResults.length/$scope.pageSize);
 		return (result == 0) ? 1 : result;
 	};
+    var customerPipe = dataService.customerPipe;
+    var customerStore = dataService.customerStore;
 
 	$scope.performSearch = function() {
-
-		$scope.searchResults = customerPipe.read({
-			complete: function(data){
-				var max = $scope.numberOfPages();
-	            $scope.pageRange = [];
-	            for(var ctr=0;ctr<max;ctr++) {
-	                $scope.pageRange.push(ctr);
-	            	}
-	            
+        customerPipe.read({
+            complete: function(data){
+                customerStore.save(data,true);
+                $scope.searchResults = customerStore.read();
+                var max = $scope.numberOfPages();
+                $scope.pageRange = [];
+                for(var ctr=0;ctr<max;ctr++) {
+                    $scope.pageRange.push(ctr);
+                }
+                $scope.$apply();
             }
-
-		});
-	};
-	/*$scope.performSearch = function() {
-		$scope.searchResults = CustomerResource.queryAll(function(){
-            var max = $scope.numberOfPages();
-            $scope.pageRange = [];
-            for(var ctr=0;ctr<max;ctr++) {
-                $scope.pageRange.push(ctr);
-            }
-		});
-	};*/
+        });
+    };
 	
 	$scope.previous = function() {
 	   if($scope.currentPage > 0) {
@@ -78,67 +69,55 @@ function SearchCustomerController($scope,$filter,$http,dataService,CustomerResou
     };
 
 	$scope.performSearch();
-   
-
-
 };
 
-function NewCustomerController($scope,$location,dataService
-) {
-	var customerPipe = dataService.customerPipe; 
-	$scope.disabled = false;
-	
+function NewCustomerController($scope,$location,dataService) {
+    var customerPipe = dataService.customerPipe;
+    $scope.disabled = false;
 
-	$scope.save = function() {
 
-		customerPipe.save($scope.customer);
-	/*
-		CustomerResource.save($scope.customer, function(customer,responseHeaders){
-			// Get the Location header and parse it.
-			var locationHeader = responseHeaders('Location');
-			var fragments = locationHeader.split('/');
-			var id = fragments[fragments.length -1];
-			$location.path('/Customers/edit/' + id);
-		});
-	*/
-	};
+    $scope.save = function() {
+        customerPipe.save($scope.customer,{
+            complete: function(data){
+                $location.path('/Customers');
+                $scope.$apply();
+            }
+        });
+    };
 	
     $scope.cancel = function() {
         $location.path("/Customers");
     };
 }
 
-function EditCustomerController($scope,$routeParams,$location,dataService,CustomerResource
-) {
+function EditCustomerController($scope,$routeParams,$location,dataService) {
 	var self = this;
 	$scope.disabled = false;
-	var customerPipe = dataService.customerPipe; 
-	var customerStore = dataService.customerStore;
+    var customerPipe = dataService.customerPipe;
+
 	$scope.get = function() {
-		customerPipe.read({
-			id: $routeParams.CustomerId,
-			success: function(data){
-				self.original = data;
-				customerStore.save(data);
-				var customer = JSON.parse(JSON.stringify(customerStore.read(parseInt($routeParams.CustomerId))[0]));
-				$scope.customer = customer;
-		        $scope.$apply();
-			}
-		});
-	};
-	/*$scope.get = function() {
-	    CustomerResource.get({CustomerId:$routeParams.CustomerId}, function(data){
-            self.original = data;
-            $scope.customer = new CustomerResource(self.original);
+        customerPipe.read({
+            id: $routeParams.CustomerId,
+            success: function(data){
+                self.original = data;
+                $scope.customer = JSON.parse(JSON.stringify(data));
+
+                $scope.$apply();
+            }
         });
-	};*/
+    };
 
 	$scope.isClean = function() {
 		return angular.equals(self.original, $scope.customer);
 	};
 
 	$scope.save = function() {
-		customerPipe.save($scope.customer);
+        customerPipe.save($scope.customer,{
+            complete: function(data){
+                $location.path('/Customers');
+                $scope.$apply();
+            }
+        });
 	};
 
 	$scope.cancel = function() {
@@ -146,9 +125,12 @@ function EditCustomerController($scope,$routeParams,$location,dataService,Custom
 	};
 
 	$scope.remove = function() {
-		$scope.customer.$remove(function() {
-			$location.path("/Customers");
-		});
+        customerPipe.remove($scope.customer,{
+            success: function(data){
+                $location.path('/Customers');
+                $scope.$apply();
+            }
+        });
 	};
 	
 	$scope.get();

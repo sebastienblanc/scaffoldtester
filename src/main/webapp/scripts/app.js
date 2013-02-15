@@ -1,10 +1,6 @@
 'use strict';
 
-var scaffoldtester = angular.module('scaffoldtester', ['scaffoldtester.filters'
-,'Customer'
-,'DiscountVoucher'
-,'StoreOrder'
-])
+var scaffoldtester = angular.module('scaffoldtester', ['scaffoldtester.filters'])
   .config(['$routeProvider', function($routeProvider) {
     $routeProvider
       .when('/Customers',{templateUrl:'partials/Customer/search.html',controller:SearchCustomerController})

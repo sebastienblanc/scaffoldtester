@@ -1,7 +1,6 @@
 'use strict';
 
-function SearchDiscountVoucherController($scope,$filter,$http,DiscountVoucherResource
-) {
+function SearchDiscountVoucherController($scope,$filter,dataService) {
     $scope.filter = $filter;
 	$scope.search={};
 	$scope.currentPage = 0;
@@ -12,19 +11,23 @@ function SearchDiscountVoucherController($scope,$filter,$http,DiscountVoucherRes
 		var result = Math.ceil($scope.searchResults.length/$scope.pageSize);
 		return (result == 0) ? 1 : result;
 	};
+    var discountVoucherPipe = dataService.discountVoucherPipe;
+    var discountVoucherStore = dataService.discountVoucherStore;
 
 	$scope.performSearch = function() {
-		$scope.searchResults = DiscountVoucherResource.queryAll(function(){
-            var max = $scope.numberOfPages();
-            $scope.pageRange = [];
-            for(var ctr=0;ctr<max;ctr++) {
-                $scope.pageRange.push(ctr);
+        discountVoucherPipe.read({
+            complete: function(data){
+                discountVoucherStore.save(data,true);
+                $scope.searchResults = discountVoucherStore.read();
+                var max = $scope.numberOfPages();
+                $scope.pageRange = [];
+                for(var ctr=0;ctr<max;ctr++) {
+                    $scope.pageRange.push(ctr);
+                }
+                $scope.$apply();
             }
-		});
-		/*$http.post('rest/DiscountVouchers/search',$scope.search).success(function(data,status){
-			$scope.searchResults = data;
-		});*/
-	};
+        });
+    };
 	
 	$scope.previous = function() {
 	   if($scope.currentPage > 0) {
@@ -68,46 +71,53 @@ function SearchDiscountVoucherController($scope,$filter,$http,DiscountVoucherRes
 	$scope.performSearch();
 };
 
-function NewDiscountVoucherController($scope,$location,DiscountVoucherResource
-) {
-	$scope.disabled = false;
-	
+function NewDiscountVoucherController($scope,$location,dataService) {
+    var discountVoucherPipe = dataService.discountVoucherPipe;
+    $scope.disabled = false;
 
-	$scope.save = function() {
-		DiscountVoucherResource.save($scope.discountvoucher, function(discountvoucher,responseHeaders){
-			// Get the Location header and parse it.
-			var locationHeader = responseHeaders('Location');
-			var fragments = locationHeader.split('/');
-			var id = fragments[fragments.length -1];
-			$location.path('/DiscountVouchers/edit/' + id);
-		});
-	};
+
+    $scope.save = function() {
+        discountVoucherPipe.save($scope.discountVoucher,{
+            complete: function(data){
+                $location.path('/DiscountVouchers');
+                $scope.$apply();
+            }
+        });
+    };
 	
     $scope.cancel = function() {
         $location.path("/DiscountVouchers");
     };
 }
 
-function EditDiscountVoucherController($scope,$routeParams,$location,DiscountVoucherResource
-) {
+function EditDiscountVoucherController($scope,$routeParams,$location,dataService) {
 	var self = this;
 	$scope.disabled = false;
+    var discountVoucherPipe = dataService.discountVoucherPipe;
 
 	$scope.get = function() {
-	    DiscountVoucherResource.get({DiscountVoucherId:$routeParams.DiscountVoucherId}, function(data){
-            self.original = data;
-            $scope.discountvoucher = new DiscountVoucherResource(self.original);
+        discountVoucherPipe.read({
+            id: $routeParams.DiscountVoucherId,
+            success: function(data){
+                self.original = data;
+                $scope.discountVoucher = JSON.parse(JSON.stringify(data));
+
+                $scope.$apply();
+            }
         });
-	};
+    };
 
 	$scope.isClean = function() {
-		return angular.equals(self.original, $scope.discountvoucher);
+		return angular.equals(self.original, $scope.discountVoucher);
 	};
 
 	$scope.save = function() {
-		$scope.discountvoucher.$update(function(){
-            $scope.get();
-		});
+        discountVoucherPipe.save($scope.discountVoucher,{
+            complete: function(data){
+                $location.path('/DiscountVouchers');
+                $scope.$apply();
+            }
+        });
 	};
 
 	$scope.cancel = function() {
@@ -115,9 +125,12 @@ function EditDiscountVoucherController($scope,$routeParams,$location,DiscountVou
 	};
 
 	$scope.remove = function() {
-		$scope.discountvoucher.$remove(function() {
-			$location.path("/DiscountVouchers");
-		});
+        discountVoucherPipe.remove($scope.discountVoucher,{
+            success: function(data){
+                $location.path('/DiscountVouchers');
+                $scope.$apply();
+            }
+        });
 	};
 	
 	$scope.get();

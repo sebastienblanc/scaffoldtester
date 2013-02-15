@@ -6,25 +6,25 @@
     <div class="control-group">
         <label for="product" class="control-label">Product</label>
         <div class="controls">
-            <input id="product" name="product" type="text"  ng-model="storeorder.product" placeholder="Enter the StoreOrder product"></input>
+            <input id="product" name="product" type="text"  ng-model="storeOrder.product" placeholder="Enter the StoreOrder product"></input>
         </div>
     </div>
     <div class="control-group">
         <label for="amount" class="control-label">Amount</label>
         <div class="controls">
-            <input id="amount" name="amount" type="number"  ng-model="storeorder.amount" placeholder="Enter the StoreOrder amount"></input>
+            <input id="amount" name="amount" type="number"  ng-model="storeOrder.amount" placeholder="Enter the StoreOrder amount"></input>
         </div>
     </div>
     <div class="control-group">
         <label for="remarks" class="control-label">Remarks</label>
         <div class="controls">
-            <input id="remarks" name="remarks" type="text"  ng-model="storeorder.remarks" placeholder="Enter the StoreOrder remarks"></input>
+            <input id="remarks" name="remarks" type="text"  ng-model="storeOrder.remarks" placeholder="Enter the StoreOrder remarks"></input>
         </div>
     </div>
     <div class="control-group">
         <label for="customer" class="control-label">Customer</label>
         <div class="controls">
-            <select id="customer" name="customer" ng-model="storeorder.customer" ng-options="c as c.id for c in customerList">
+            <select id="customer" name="customer" ng-model="storeOrder.customer" ng-options="c as c.id for c in customerList">
                 <option value="">Choose a Customer</option>
             </select>
         </div>
@@ -32,7 +32,7 @@
     <div class="control-group">
         <label for="voucher" class="control-label">Voucher</label>
         <div class="controls">
-            <select id="voucher" name="voucher" ng-model="storeorder.voucher" ng-options="v as v.id for v in voucherList">
+            <select id="voucher" name="voucher" ng-model="storeOrder.voucher" ng-options="v as v.id for v in voucherList">
                 <option value="">Choose a Voucher</option>
             </select>
         </div>

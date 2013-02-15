@@ -4,42 +4,42 @@ scaffoldtester.factory( "dataService", function() {
     return {
         customerPipe: AeroGear.Pipeline({
             name: "customers",
-             settings: {
-                baseURL: "rest/"
-            }
-           }).pipes.customers,
-        customerStore: AeroGear.DataManager({
-            name: "customer",
             settings: {
-                storageType: "localStorage"
+                 baseURL: "rest/"
             }
-        }).stores.customer,
+         }).pipes.customers,
+        customerStore: AeroGear.DataManager({
+            name: "Customer",
+            type: "SessionLocal",
+            settings: {
+                 storageType: "localStorage"
+            }
+        }).stores.Customer,
         discountVoucherPipe: AeroGear.Pipeline({
             name: "discountvouchers",
             settings: {
-                baseURL: "rest/"
+                 baseURL: "rest/"
             }
-        }).pipes.discountvouchers,
+         }).pipes.discountvouchers,
         discountVoucherStore: AeroGear.DataManager({
-            name: "discountVoucher",
+            name: "DiscountVoucher",
             type: "SessionLocal",
             settings: {
-                storageType: "localStorage"
+                 storageType: "localStorage"
             }
-        }).stores.discountVoucher,
+        }).stores.DiscountVoucher,
         storeOrderPipe: AeroGear.Pipeline({
             name: "storeorders",
             settings: {
-                baseURL: "rest/"
+                 baseURL: "rest/"
             }
-        }).pipes.storeorders,
+         }).pipes.storeorders,
         storeOrderStore: AeroGear.DataManager({
-            name: "storeOrder",
+            name: "StoreOrder",
             type: "SessionLocal",
             settings: {
-                storageType: "localStorage"
+                 storageType: "localStorage"
             }
-        }).stores.storeOrder
-
+        }).stores.StoreOrder
     };
 });

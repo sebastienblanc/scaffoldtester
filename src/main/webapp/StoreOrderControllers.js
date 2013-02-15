@@ -1,9 +1,6 @@
 'use strict';
 
-function SearchStoreOrderController($scope,$filter,$http,StoreOrderResource
-,CustomerResource
-,DiscountVoucherResource
-) {
+function SearchStoreOrderController($scope,$filter,dataService) {
     $scope.filter = $filter;
 	$scope.search={};
 	$scope.currentPage = 0;
@@ -14,21 +11,37 @@ function SearchStoreOrderController($scope,$filter,$http,StoreOrderResource
 		var result = Math.ceil($scope.searchResults.length/$scope.pageSize);
 		return (result == 0) ? 1 : result;
 	};
-    $scope.customerList = CustomerResource.queryAll();
-    $scope.voucherList = DiscountVoucherResource.queryAll();
+    var storeOrderPipe = dataService.storeOrderPipe;
+    var storeOrderStore = dataService.storeOrderStore;
+    var customerPipe = dataService.customerPipe;
+    customerPipe.read({
+        success: function(data){
+            $scope.customerList = data;
+            $scope.$apply();
+        }
+    });
+    var discountVoucherPipe = dataService.discountVoucherPipe;
+    discountVoucherPipe.read({
+        success: function(data){
+            $scope.voucherList = data;
+            $scope.$apply();
+        }
+    });
 
 	$scope.performSearch = function() {
-		$scope.searchResults = StoreOrderResource.queryAll(function(){
-            var max = $scope.numberOfPages();
-            $scope.pageRange = [];
-            for(var ctr=0;ctr<max;ctr++) {
-                $scope.pageRange.push(ctr);
+        storeOrderPipe.read({
+            complete: function(data){
+                storeOrderStore.save(data,true);
+                $scope.searchResults = storeOrderStore.read();
+                var max = $scope.numberOfPages();
+                $scope.pageRange = [];
+                for(var ctr=0;ctr<max;ctr++) {
+                    $scope.pageRange.push(ctr);
+                }
+                $scope.$apply();
             }
-		});
-		/*$http.post('rest/StoreOrders/search',$scope.search).success(function(data,status){
-			$scope.searchResults = data;
-		});*/
-	};
+        });
+    };
 	
 	$scope.previous = function() {
 	   if($scope.currentPage > 0) {
@@ -72,74 +85,93 @@ function SearchStoreOrderController($scope,$filter,$http,StoreOrderResource
 	$scope.performSearch();
 };
 
-function NewStoreOrderController($scope,$location,StoreOrderResource
-, CustomerResource
-, DiscountVoucherResource
-) {
-	$scope.disabled = false;
-	
-	CustomerResource.queryAll(function(data){
-        $scope.customerList = angular.fromJson(JSON.stringify(data));
-    });
-	DiscountVoucherResource.queryAll(function(data){
-        $scope.voucherList = angular.fromJson(JSON.stringify(data));
-    });
+function NewStoreOrderController($scope,$location,dataService) {
+    var storeOrderPipe = dataService.storeOrderPipe;
+    $scope.disabled = false;
 
-	$scope.save = function() {
-		StoreOrderResource.save($scope.storeorder, function(storeorder,responseHeaders){
-			// Get the Location header and parse it.
-			var locationHeader = responseHeaders('Location');
-			var fragments = locationHeader.split('/');
-			var id = fragments[fragments.length -1];
-			$location.path('/StoreOrders/edit/' + id);
-		});
-	};
+        var customerPipe = dataService.customerPipe;
+        customerPipe.read({
+            success: function(data){
+                $scope.customerList = data;
+                $scope.$apply();
+            }
+        });
+        var discountVoucherPipe = dataService.discountVoucherPipe;
+        discountVoucherPipe.read({
+            success: function(data){
+                $scope.voucherList = data;
+                $scope.$apply();
+            }
+        });
+
+    $scope.save = function() {
+        storeOrderPipe.save($scope.storeOrder,{
+            complete: function(data){
+                $location.path('/StoreOrders');
+                $scope.$apply();
+            }
+        });
+    };
 	
     $scope.cancel = function() {
         $location.path("/StoreOrders");
     };
 }
 
-function EditStoreOrderController($scope,$routeParams,$location,StoreOrderResource
-, CustomerResource
-, DiscountVoucherResource
-) {
+function EditStoreOrderController($scope,$routeParams,$location,dataService) {
 	var self = this;
 	$scope.disabled = false;
+    var storeOrderPipe = dataService.storeOrderPipe;
+    var customerPipe = dataService.customerPipe;
+    var discountVoucherPipe = dataService.discountVoucherPipe;
 
 	$scope.get = function() {
-	    StoreOrderResource.get({StoreOrderId:$routeParams.StoreOrderId}, function(data){
-            self.original = data;
-            $scope.storeorder = new StoreOrderResource(self.original);
-            CustomerResource.queryAll(function(data) {
-                $scope.customerList = data;
-                angular.forEach($scope.customerList, function(datum){
-                    if(angular.equals(datum,$scope.storeorder.customer)) {
-                        $scope.storeorder.customer = datum;
-                        self.original.customer = datum;
+        storeOrderPipe.read({
+            id: $routeParams.StoreOrderId,
+            success: function(data){
+                self.original = data;
+                $scope.storeOrder = JSON.parse(JSON.stringify(data));
+                 customerPipe.read({
+                    success: function(data){
+                        $scope.customerList = data;
+                        angular.forEach($scope.customerList, function(datum){
+                        if(angular.equals(datum,$scope.storeOrder.customer)) {
+                            $scope.storeOrder.customer = datum;
+                            self.original.customer = datum;
+                        }
+                        });
+                        $scope.$apply();
                     }
                 });
-            });
-            DiscountVoucherResource.queryAll(function(data) {
-                $scope.voucherList = data;
-                angular.forEach($scope.voucherList, function(datum){
-                    if(angular.equals(datum,$scope.storeorder.voucher)) {
-                        $scope.storeorder.voucher = datum;
-                        self.original.voucher = datum;
+                 discountVoucherPipe.read({
+                    success: function(data){
+                        $scope.voucherList = data;
+                        angular.forEach($scope.voucherList, function(datum){
+                        if(angular.equals(datum,$scope.storeOrder.voucher)) {
+                            $scope.storeOrder.voucher = datum;
+                            self.original.voucher = datum;
+                        }
+                        });
+                        $scope.$apply();
                     }
                 });
-            });
+
+                $scope.$apply();
+            }
         });
-	};
+    };
 
 	$scope.isClean = function() {
-		return angular.equals(self.original, $scope.storeorder);
+		return angular.equals(self.original, $scope.storeOrder);
 	};
 
 	$scope.save = function() {
-		$scope.storeorder.$update(function(){
-            $scope.get();
-		});
+        storeOrderPipe.save($scope.storeOrder,{
+            complete: function(data){
+                $location.path('/StoreOrders');
+                $scope.$apply();
+            }
+        });
 	};
 
 	$scope.cancel = function() {
@@ -147,9 +179,12 @@ function EditStoreOrderController($scope,$routeParams,$location,StoreOrderResour
 	};
 
 	$scope.remove = function() {
-		$scope.storeorder.$remove(function() {
-			$location.path("/StoreOrders");
-		});
+        storeOrderPipe.remove($scope.storeOrder,{
+            success: function(data){
+                $location.path('/StoreOrders');
+                $scope.$apply();
+            }
+        });
 	};
 	
 	$scope.get();
